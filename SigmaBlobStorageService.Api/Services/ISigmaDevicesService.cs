@@ -1,7 +1,10 @@
-﻿namespace SigmaBlobStorageService.Api.Services
+﻿using System;
+
+namespace SigmaBlobStorageService.Api.Services
 {
     public interface ISigmaDevicesService
     {
-        Microsoft.AspNetCore.Mvc.FileContentResult GetFileByPath(string path, string fileName);
+        byte[] GetSensorDataForDeviceByDate(string device, string sensorType, DateTime date);
+        byte[] GetDataForDeviceByDate(string device, DateTime date);
     }
 }

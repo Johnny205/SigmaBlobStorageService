@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.Extensions.Logging;
 using SigmaBlobStorageService.Api.Services;
-using System.Threading.Tasks;
+using System;
 
 namespace SigmaBlobStorageService.Api.Controllers
 {
@@ -10,19 +8,37 @@ namespace SigmaBlobStorageService.Api.Controllers
     [Route("api/[controller]")]
     public class DevicesController : ControllerBase
     {
-        private readonly ILogger<DevicesController> _logger;
         private readonly ISigmaDevicesService _sigmaDevicesService;
 
-        public DevicesController(ILogger<DevicesController> logger, ISigmaDevicesService sigmaDevicesService)
+        public DevicesController(ISigmaDevicesService sigmaDevicesService)
         {
-            _logger = logger;
             _sigmaDevicesService = sigmaDevicesService;
         }
 
         [HttpGet]
-        public async Task<FileContentResult> Get()
+        [Route("GetData/{deviceName}/{date}/{sensorType}")]
+        public IActionResult GetData(string deviceName, DateTime date, string sensorType)
         {
-            return _sigmaDevicesService.GetFileByPath("dockan/humidity/historical.zip", "2010-11-01.csv");
+            var data =  _sigmaDevicesService.GetSensorDataForDeviceByDate(deviceName, sensorType, date);
+            if (data != null)
+            {
+                return File(data, "application/zip", "data.zip");
+            }
+
+            return NotFound();
+        }
+
+        [HttpGet]
+        [Route("GetData/{deviceName}/{date}")]
+        public IActionResult GetDataForDevice(string deviceName, DateTime date)
+        {
+            var data = _sigmaDevicesService.GetDataForDeviceByDate(deviceName, date);
+            if (data != null)
+            {
+                return File(data, "application/zip", "data.zip");
+            }
+
+            return NotFound();
         }
     }
 }

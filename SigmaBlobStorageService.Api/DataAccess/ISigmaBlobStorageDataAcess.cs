@@ -1,7 +1,11 @@
-﻿namespace SigmaBlobStorageService.Api.DataAccess
+﻿using SigmaBlobStorageService.Api.Models;
+using System.Collections.Generic;
+
+namespace SigmaBlobStorageService.Api.DataAccess
 {
     public interface ISigmaBlobStorageDataAcess
     {
-        byte[] GetFileByPath(string path, string fileName);
+        FileModel GetFileByPath(string path, string fileName);
+        List<string> GetSensorTypesForDevice(string device);
     }
 }
