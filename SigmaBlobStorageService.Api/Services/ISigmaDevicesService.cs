@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace SigmaBlobStorageService.Api.Services
 {
     public interface ISigmaDevicesService
     {
-        byte[] GetSensorDataForDeviceByDate(string device, string sensorType, DateTime date);
-        byte[] GetDataForDeviceByDate(string device, DateTime date);
+        Task<byte[]> GetSensorDataForDeviceByDateAsync(string device, string sensorType, DateTime date);
+        Task<byte[]> GetDataForDeviceByDateAsync(string device, DateTime date);
     }
 }

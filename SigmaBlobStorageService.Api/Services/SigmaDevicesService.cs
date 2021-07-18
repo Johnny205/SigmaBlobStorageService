@@ -4,84 +4,78 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SigmaBlobStorageService.Api.Services
 {
     public class SigmaDevicesService : ISigmaDevicesService
     {
+        private ISigmaBlobStorageDataAcess SigmaBlobStorageDataAccess { get; }
+        
         public SigmaDevicesService(ISigmaBlobStorageDataAcess sigmaBlobStorageDataAcess)
         {
-            _sigmaBlobStorageDataAcess = sigmaBlobStorageDataAcess;
+            SigmaBlobStorageDataAccess = sigmaBlobStorageDataAcess;
         }
 
-        public ISigmaBlobStorageDataAcess _sigmaBlobStorageDataAcess { get; }
-
-        public byte[] GetSensorDataForDeviceByDate(string device, string sensorType, DateTime date)
+        public async Task<byte[]> GetSensorDataForDeviceByDateAsync(string deviceId, string sensorType, DateTime date)
         {
-            _sigmaBlobStorageDataAcess.GetSensorTypesForDevice("");
+            var path = $"{deviceId}/{sensorType}";
+            var fileName = $"{date.Date:yyyy-MM-dd}.csv";
+            var fileModel = await SigmaBlobStorageDataAccess.GetFileByPath(path, fileName);
 
-            string path = $"{device}/{sensorType}";
-            string fileName = $"{date.Date.ToString("yyyy-MM-dd")}.csv";
-
-            try
-            {
-                var file = _sigmaBlobStorageDataAcess.GetFileByPath(path, fileName);
-                byte[] zippedFile = GetZippedFile(new List<FileModel> { file });
-
-                return zippedFile;
-            }
-            catch(AggregateException)
-            {
+            if (fileModel == null) 
                 return null;
-            }
+
+            return GetZippedFile(fileModel);
         }
 
-        public byte[] GetDataForDeviceByDate(string device, DateTime date)
+        public async Task<byte[]> GetDataForDeviceByDateAsync(string deviceId, DateTime date)
         {
-            var sensorTypes = _sigmaBlobStorageDataAcess.GetSensorTypesForDevice(device);
-            List<FileModel> files = new List<FileModel>();
+            var fileModels = new List<FileModel>();
+            var fileName = $"{date.Date:yyyy-MM-dd}.csv";
+            var sensorTypes = SigmaBlobStorageDataAccess.GetSensorTypesForDevice(deviceId);
 
-            try
+            foreach (var sensorType in sensorTypes)
             {
-                foreach (var sensorType in sensorTypes)
-                {
-                    string path = $"{device}/{sensorType}";
-                    string fileName = $"{date.Date.ToString("yyyy-MM-dd")}.csv";
+                var path = $"{deviceId}/{sensorType}";
+                var file = await SigmaBlobStorageDataAccess.GetFileByPath(path, fileName);
 
-                    FileModel file = _sigmaBlobStorageDataAcess.GetFileByPath(path, fileName);
-                    file.Name = $"{sensorType}_{file.Name}";
-                    files.Add(file);
-                }
+                if (file == null) 
+                    continue;
+                    
+                file.Name = $"{sensorType}_{file.Name}";
+                fileModels.Add(file);
+            }
 
-                var zippedFile = GetZippedFile(files);
-                return zippedFile;
-            }
-            catch(AggregateException)
-            {
-                return null;
-            }
+            return fileModels.Any() ? GetZippedFile(fileModels) : null;            
         }
 
-        private byte[] GetZippedFile(List<FileModel> files)
+        private byte[] GetZippedFile(FileModel file) => GetZippedFile(new List<FileModel> { file });
+
+        private byte[] GetZippedFile(IEnumerable<FileModel> files)
         {
             using (var compressedFileStream = new MemoryStream())
             {
-                using (var zipArchive = new ZipArchive(compressedFileStream, ZipArchiveMode.Create, false))
-                {
-                    foreach (var file in files)
-                    {
-                        var zipEntry = zipArchive.CreateEntry(file.Name);
-
-                        using (var originalFileStream = new MemoryStream(file.FileContent))
-                        using (var zipEntryStream = zipEntry.Open())
-                        {
-                            originalFileStream.CopyTo(zipEntryStream);
-                        }
-                    }
-                }
-
+                ArchiveFiles(compressedFileStream, files);
                 return compressedFileStream.ToArray();
             }
+        }
+
+        private void ArchiveFiles(Stream fileStream, IEnumerable<FileModel> fileModels)
+        {
+            using (var zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Create, false))
+                foreach (var fileModel in fileModels)
+                    AddFileToArchive(zipArchive, fileModel); 
+        }
+
+        private void AddFileToArchive(ZipArchive zipArchive, FileModel fileModel)
+        {
+            var zipEntry = zipArchive.CreateEntry(fileModel.Name);
+
+            using (var originalFileStream = new MemoryStream(fileModel.FileContent))
+            using (var zipEntryStream = zipEntry.Open())
+                originalFileStream.CopyTo(zipEntryStream);
         }
     }
 }

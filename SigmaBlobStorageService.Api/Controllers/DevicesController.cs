@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SigmaBlobStorageService.Api.Services;
 using System;
+using System.Threading.Tasks;
 
 namespace SigmaBlobStorageService.Api.Controllers
 {
@@ -16,29 +17,25 @@ namespace SigmaBlobStorageService.Api.Controllers
         }
 
         [HttpGet]
-        [Route("GetData/{deviceName}/{date}/{sensorType}")]
-        public IActionResult GetData(string deviceName, DateTime date, string sensorType)
+        [Route("GetData/{deviceId}/{date}/{sensorType}")]
+        public async Task<IActionResult> GetData(string deviceId, DateTime date, string sensorType)
         {
-            var data =  _sigmaDevicesService.GetSensorDataForDeviceByDate(deviceName, sensorType, date);
-            if (data != null)
-            {
-                return File(data, "application/zip", "data.zip");
-            }
+            var data =  await _sigmaDevicesService.GetSensorDataForDeviceByDateAsync(deviceId, sensorType, date);
+            if (data == null)
+                return NotFound();
 
-            return NotFound();
+            return File(data, "application/zip", "data.zip");
         }
 
         [HttpGet]
-        [Route("GetData/{deviceName}/{date}")]
-        public IActionResult GetDataForDevice(string deviceName, DateTime date)
+        [Route("GetData/{deviceId}/{date}")]
+        public async Task<IActionResult> GetDataForDevice(string deviceId, DateTime date)
         {
-            var data = _sigmaDevicesService.GetDataForDeviceByDate(deviceName, date);
-            if (data != null)
-            {
-                return File(data, "application/zip", "data.zip");
-            }
+            var data = await _sigmaDevicesService.GetDataForDeviceByDateAsync(deviceId, date);
+            if (data == null)
+                return NotFound();
 
-            return NotFound();
+            return File(data, "application/zip", "data.zip");
         }
     }
 }
