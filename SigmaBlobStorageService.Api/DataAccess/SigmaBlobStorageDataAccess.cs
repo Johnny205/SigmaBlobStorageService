@@ -49,16 +49,15 @@ namespace SigmaBlobStorageService.Api.DataAccess
             }
         }
 
-        public List<string> GetSensorTypesForDevice(string device)
+        public List<string> GetSensorTypesForDevice(string deviceId)
         {
             var listOfDirectories = new List<string>();
             var container = GetBlobContainerClient();
 
-
-            foreach (Page<BlobHierarchyItem> page in container.GetBlobsByHierarchy(prefix: $"{device}/", delimiter: "/").AsPages())
+            foreach (Page<BlobHierarchyItem> page in container.GetBlobsByHierarchy(prefix: $"{deviceId}/", delimiter: "/").AsPages())
                 foreach (var blobPrefix in page.Values.Where(item => item.IsPrefix).Select(item => item.Prefix))
                 {
-                    var dir = GetBlobDirectoryFromBlobPrefix(blobPrefix, device);
+                    var dir = GetBlobDirectoryFromBlobPrefix(blobPrefix, deviceId);
                     listOfDirectories.Add(dir);
                 }
 

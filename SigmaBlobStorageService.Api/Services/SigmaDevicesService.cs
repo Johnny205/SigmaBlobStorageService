@@ -18,7 +18,7 @@ namespace SigmaBlobStorageService.Api.Services
             SigmaBlobStorageDataAccess = sigmaBlobStorageDataAcess;
         }
 
-        public async Task<byte[]> GetSensorDataForDeviceByDateAsync(string deviceId, string sensorType, DateTime date)
+        public async Task<byte[]> GetSensorDataForDeviceByDateAsync(string deviceId, DateTime date, string sensorType)
         {
             var path = $"{deviceId}/{sensorType}";
             var fileName = $"{date.Date:yyyy-MM-dd}.csv";

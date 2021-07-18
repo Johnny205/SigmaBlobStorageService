@@ -7,6 +7,6 @@ namespace SigmaBlobStorageService.Api.DataAccess
     public interface ISigmaBlobStorageDataAcess
     {
         Task<FileModel> GetFileByPath(string path, string fileName);
-        List<string> GetSensorTypesForDevice(string device);
+        List<string> GetSensorTypesForDevice(string deviceId);
     }
 }

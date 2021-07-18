@@ -5,7 +5,7 @@ namespace SigmaBlobStorageService.Api.Services
 {
     public interface ISigmaDevicesService
     {
-        Task<byte[]> GetSensorDataForDeviceByDateAsync(string device, string sensorType, DateTime date);
-        Task<byte[]> GetDataForDeviceByDateAsync(string device, DateTime date);
+        Task<byte[]> GetSensorDataForDeviceByDateAsync(string deviceId, DateTime date, string sensorType);
+        Task<byte[]> GetDataForDeviceByDateAsync(string deviceId, DateTime date);
     }
 }

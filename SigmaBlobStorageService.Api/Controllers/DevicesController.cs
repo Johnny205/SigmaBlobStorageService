@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using SigmaBlobStorageService.Api.Services;
 using System;
 using System.Threading.Tasks;
@@ -17,10 +18,11 @@ namespace SigmaBlobStorageService.Api.Controllers
         }
 
         [HttpGet]
+        [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
         [Route("GetData/{deviceId}/{date}/{sensorType}")]
         public async Task<IActionResult> GetData(string deviceId, DateTime date, string sensorType)
         {
-            var data =  await _sigmaDevicesService.GetSensorDataForDeviceByDateAsync(deviceId, sensorType, date);
+            var data =  await _sigmaDevicesService.GetSensorDataForDeviceByDateAsync(deviceId, date, sensorType);
             if (data == null)
                 return NotFound();
 
@@ -28,6 +30,7 @@ namespace SigmaBlobStorageService.Api.Controllers
         }
 
         [HttpGet]
+        [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any)]
         [Route("GetData/{deviceId}/{date}")]
         public async Task<IActionResult> GetDataForDevice(string deviceId, DateTime date)
         {
