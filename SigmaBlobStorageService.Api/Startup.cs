@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using SigmaBlobStorageService.Api.DataAccess;
+using SigmaBlobStorageService.Api.Helpers;
 using SigmaBlobStorageService.Api.Services;
 
 namespace SigmaBlobStorageService.Api
@@ -27,8 +28,10 @@ namespace SigmaBlobStorageService.Api
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "api", Version = "v1" });
             });
 
-            services.AddSingleton<ISigmaBlobStorageDataAcess, SigmaBlobStorageDataAccess>();
-            services.AddSingleton<ISigmaDevicesService, SigmaDevicesService>();
+            services.AddScoped<ISigmaBlobStorageDataAcess, SigmaBlobStorageDataAccess>();
+            services.AddScoped<ISigmaDevicesService, SigmaDevicesService>();
+            services.AddScoped<IZipArchiveHelper, ZipArchiveHelper>();
+            services.AddScoped<IBlobContainerProvider, BlobContainerProvider>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
